@@ -1,0 +1,8 @@
+# Ignore standard Python virtual environ
+# Environments
+venv/
+.venv/
+
+# Datasets
+SolarDataset/
+
