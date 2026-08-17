@@ -6,17 +6,19 @@ Single-file, no external config. Matches your original CLI command:
   yolo detect train \
     model=./yolov8n.pt \
     data=./SolarDataset/data.yaml \
-    epochs=100 \
+    epochs=150 \
     imgsz=640 \
-    batch=8 \
+    batch=16 \
     device=0 \
     workers=4 \
-    project=./Hades-06 \
-    name=.
+    project=./Solaris \
+    name=yolov8n-final \
+    patience=25
 
 Adds: a plateau timer. If mAP50-95 doesn't improve by more than
 PLATEAU_MIN_DELTA for PLATEAU_TIMEOUT_SEC of wall-clock time, training
-stops early — independent of Ultralytics' own epoch-based `patience`.
+stops early — independent of Ultralytics' own epoch-based `patience`
+(both are active: whichever trips first stops training).
 
 Usage:
     chmod +x train_hades06.py
@@ -28,20 +30,21 @@ from ultralytics import YOLO
 from ultralytics.utils.callbacks.base import add_integration_callbacks  # noqa: F401 (ensures callback system loaded)
 
 # ============================================================
-# CONFIG — matches your CLI command exactly
+# CONFIG
 # ============================================================
 MODEL = "./yolov8n.pt"
 DATA = "./SolarDataset/data.yaml"
-EPOCHS = 20
+EPOCHS = 100       # adequate ceiling for ~3,900 images on yolov8n; plateau timer + patience will cut short if it converges earlier
 IMGSZ = 640
-BATCH = 8
+BATCH = 16          # RTX 3050 should handle this at imgsz=640; drop to 8 if you hit OOM
 DEVICE = 0
 WORKERS = 4
-PROJECT = "./Hades-06"
-NAME = "."
+PROJECT = "./Solaris"
+NAME = "yolov8n-final"
+PATIENCE = 25       # Ultralytics' own epoch-based early stopping (val mAP plateau)
 
 # ============================================================
-# PLATEAU TIMER CONFIG
+# PLATEAU TIMER CONFIG (separate, wall-clock-based, on top of PATIENCE above)
 # ============================================================
 PLATEAU_MIN_DELTA = 0.001      # minimum mAP50-95 improvement to count as "progress"
 PLATEAU_TIMEOUT_SEC = 1800     # stop if no progress for this many seconds (30 min)
@@ -105,10 +108,11 @@ def main():
         workers=WORKERS,
         project=PROJECT,
         name=NAME,
-        exist_ok=True,   # name="." would collide on rerun otherwise
+        patience=PATIENCE,
+        exist_ok=True,   # allows reruns without erroring on existing folder
     )
 
-    print(f"\nDone. Best weights under: {PROJECT}/weights/best.pt")
+    print(f"\nDone. Best weights under: {PROJECT}/{NAME}/weights/best.pt")
     print(f"Final best mAP50-95 tracked by PlateauTimer: {plateau.best:.4f}")
 
 
