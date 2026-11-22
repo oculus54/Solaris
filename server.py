@@ -4,6 +4,7 @@ from picamera2 import Picamera2
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import cv2
 import time
 import threading
@@ -35,6 +36,12 @@ app = FastAPI(
     title="Solaris AI",
     description="YOLO26n Real-Time Solar Defect Detection",
     version="1.0.0"
+)
+
+app.mount(
+    "/static",
+    StaticFiles(directory=Path(__file__).parent / "static"),
+    name="static"
 )
 
 # ==================================================
@@ -365,6 +372,10 @@ def shutdown_event():
 
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
+
+    template_path = Path(__file__).parent / "templates" / "index.html"
+
+    return template_path.read_text(encoding="utf-8")
 
     return """
     <!DOCTYPE html>

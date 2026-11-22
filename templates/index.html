@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLARIS AI | YOLO26n</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <svg class="logo" viewBox="0 0 52 52" aria-hidden="true">
+                <circle cx="26" cy="26" r="9" fill="#ffb020"/>
+                <g stroke="#ffb020" stroke-width="3" stroke-linecap="round">
+                    <path d="M26 4v7M26 41v7M4 26h7M41 26h7M10.5 10.5l5 5M36.5 36.5l5 5M41.5 10.5l-5 5M15.5 36.5l-5 5"/>
+                </g>
+            </svg>
+            <div class="header-text">
+                <h1>SOLARIS AI</h1>
+                <p>YOLO26n Real-Time Solar Defect Detection</p>
+            </div>
+        </header>
+
+        <div class="status-container">
+            <div class="status" id="status"><span class="dot"></span><span id="status-text">LIVE DETECTION</span></div>
+            <div class="model">MODEL: <b>CUSTOM YOLO26n</b> &nbsp;|&nbsp; CAMERA: <b>PI CAMERA 2</b> &nbsp;|&nbsp; DEVICE: <b>RASPBERRY PI 4B</b></div>
+        </div>
+
+        <div class="main-grid">
+            <main class="video-container" id="video-box">
+                <div class="rec-tag">LIVE</div>
+                <img id="feed" src="/video_feed" alt="Live Detection Stream">
+                <div class="offline-msg">
+                    <strong>STREAM OFFLINE</strong>
+                    <span>Waiting for the camera feed. Retrying automatically…</span>
+                </div>
+            </main>
+
+            <aside class="side">
+                <section class="card">
+                    <h2>Defect classes</h2>
+                    <div class="legend">
+                        <div class="legend-row"><span class="swatch" style="background: var(--c-damage)"></span>Physical Damage</div>
+                        <div class="legend-row"><span class="swatch" style="background: var(--c-bird)"></span>Bird Drop</div>
+                        <div class="legend-row"><span class="swatch" style="background: var(--c-dust)"></span>Dusty</div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Test results</h2>
+                    <div class="metrics">
+                        <div class="metric"><div class="v">0.464</div><div class="l">PRECISION</div></div>
+                        <div class="metric"><div class="v">0.416</div><div class="l">RECALL</div></div>
+                        <div class="metric"><div class="v">0.391</div><div class="l">mAP@0.50</div></div>
+                        <div class="metric"><div class="v">0.244</div><div class="l">mAP@0.50:0.95</div></div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>mAP@0.50:0.95 by class</h2>
+                    <div class="bars">
+                        <div class="bar-row">
+                            <div class="top"><span>Physical Damage</span><b>0.473</b></div>
+                            <div class="track"><div class="fill" style="width: 47.3%; background: var(--c-damage)"></div></div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="top"><span>Bird Drop</span><b>0.137</b></div>
+                            <div class="track"><div class="fill" style="width: 13.7%; background: var(--c-bird)"></div></div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="top"><span>Dusty</span><b>0.120</b></div>
+                            <div class="track"><div class="fill" style="width: 12%; background: var(--c-dust)"></div></div>
+                        </div>
+                    </div>
+                    <p class="note">Trained on 2,907 augmented images. Prototype performance.</p>
+                </section>
+            </aside>
+        </div>
+
+        <footer class="footer">SOLARIS AI | EDGE AI VISION SYSTEM</footer>
+    </div>
+
+    <script>
+        // Show an offline state if the stream drops, and retry every 5 seconds.
+        (function () {
+            var img = document.getElementById('feed');
+            var box = document.getElementById('video-box');
+            var status = document.getElementById('status');
+            var text = document.getElementById('status-text');
+
+            function setOnline(ok) {
+                box.classList.toggle('offline', !ok);
+                status.classList.toggle('offline', !ok);
+                text.textContent = ok ? 'LIVE DETECTION' : 'STREAM OFFLINE';
+            }
+
+            img.addEventListener('load', function () { setOnline(true); });
+            img.addEventListener('error', function () {
+                setOnline(false);
+                setTimeout(function () { img.src = '/video_feed?t=' + Date.now(); }, 5000);
+            });
+        })();
+    </script>
+</body>
+</html>
